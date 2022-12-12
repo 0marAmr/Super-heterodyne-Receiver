@@ -1,67 +1,61 @@
-%% fft for sin(2*pi*f*t)
+%% clear section
 clear
 clc
 close all
 
 %% message signal
-fm = 100;         % 10 KHz
-Fs = 10*fm;
-t = 0:1/Fs:1-1/Fs;
-y = cos(2*pi*fm*t);
-subplot(3,1,1)
-plot(t,y, 'b');
-title("Signal On Time Domain")
-xlabel("Time (s)")
-ylabel("Volts")
-grid on 
-ylim([-2 2])
-xlim([0 2*1/fm])
 
-%% fft of message signal 
-Y = fftshift(fft(y));
-f = -Fs/2:1:Fs/2-1;
-subplot(3,1,2)
-plot(f, abs(Y), 'r');
-title("Frequency Spectrum of Signal")
-xlabel("Frequency (Hz)")
-ylabel("Magnitude")
-grid on 
+filename = ["Short_QuranPalestine.wav", "Short_BBCArabic2.wav"];              % names of audio files
+for i = 1 : 2
+    [y, Fs] = audioread(filename(i));                                         % read audio and getting sample frequency
+    size(y)
+    y = sum(y.');                                                             % converte from stereo to mono sound
+    y = y';                                                                   % converte from stereo to mono sound
 
-%% carrier signal
-n = 0;
-delta_f = 50*10^3;              % 50 KHz
-f_o = 1000;                     % 100 KHz
-fn = f_o + n*delta_f;           % carrier frequency
-Fs_carrier = 10*fn;
-t = 0:1/Fs_carrier:1-1/Fs_carrier;
-carrier_signal = cos(2*pi*fn*t);
+    max_audio_length = 739200;                                                % max audio length
+    y(end + max_audio_length - length(y) , 1) = 0;                            % adding zeros to short audios
+    % sound(y,Fs)                                           % -+lay audio
 
-%% AM modulation
-modulating_signal = interp(y, Fs_carrier/length(y));
-% [NUM, DEN] = numden(sym(Fs_carrier/length(y)));
-% modulating_signal = resample(y, double(NUM), double(DEN));
+    subplot(3,2,i)
+    plot(y, 'b');
+    title("(" + filename(i) + ") " + "Signal in Time Domain")
+    xlabel("Time (s)")
+    ylabel("Volts")
+    grid on 
+    ylim([-3 3])
 
-% sound(y , 44100)
-modulated_signal = carrier_signal.*modulating_signal; 
-MODULATED_SIGNAL = fftshift(fft(modulated_signal));
+    %% fft of message signal 
+    Y = fftshift(fft(y));
+    f_Y = -length(Y)/2:1:length(Y)/2-1;
+    subplot(3,2,4 - mod(i,2))
+    plot(f_Y, abs(Y), 'r');
+    title("Frequency Spectrum of Signal")
+    xlabel("Frequency (Hz)")
+    ylabel("Magnitude")
+    grid on 
 
-f = -length(MODULATED_SIGNAL)/2:1:length(MODULATED_SIGNAL)/2-1;
-subplot(3,1,3)
-plot(f,abs(MODULATED_SIGNAL), 'k');
-title("Frequency Spectrum of Modulated Signal")
-xlabel("Frequency (Hz)")
-ylabel("Magnitude")
-grid on 
-axis 'auto xy'
+    %% carrier signal
+    n = (i-1);
+    delta_f = 50*10^3;               % 50 KHz
+    f_o = 100000;                    % 100 KHz
+    fn = f_o + n*delta_f;            % carrier frequency
+    Fs_carrier = 10*fn;
+    t = (0:1/Fs_carrier:1-1/Fs_carrier)';
+    carrier_signal = cos(2*pi*fn*t);
 
-%% test cos with high frequency
-% clear
-% clc
-% close all
-% Fs = 10000;
-% t = 0 : 1/Fs : 1-1/Fs;  % Fs points
-% Fm = 1000;
-% y = cos(2*pi*Fm*t);
-% plot(t, y)
-% ylim([-2 2])
-% xlim([0 0.01])
+    %% AM modulation
+    % modulating_signal = interp(y, Fs_carrier/length(y));
+    [NUM, DEN] = numden(sym(length(carrier_signal)/length(y)));
+    modulating_signal = resample(y, double(NUM), double(DEN));
+    modulated_signal = carrier_signal.*modulating_signal; 
+    MODULATED_SIGNAL = fftshift(fft(modulated_signal));
+
+    f_MODULATED_SIGNAL = -length(MODULATED_SIGNAL)/2:1:length(MODULATED_SIGNAL)/2-1;
+    subplot(3,2,6 - mod(i,2))
+    plot(f_MODULATED_SIGNAL,abs(MODULATED_SIGNAL), 'g');
+    title("Frequency Spectrum of Modulated Signal")
+    xlabel("Frequency (Hz)")
+    ylabel("Magnitude")
+    grid on 
+    xlim([-0.5*10^6 0.5*10^6])
+end
