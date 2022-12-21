@@ -49,7 +49,7 @@ for i = 1 : 3
     modulated_signal = carrier_signal.*modulating_signal; 
     MODULATED_SIGNAL = fftshift(fft(modulated_signal));
   
-    sum_signals = sum_signals + MODULATED_SIGNAL;
+    sum_signals = sum_signals + modulated_signal;
 
     f_MODULATED_SIGNAL = (-length(MODULATED_SIGNAL)/2:1:length(MODULATED_SIGNAL)/2-1)';
     subplot(3,3,6 + i)
@@ -60,25 +60,34 @@ for i = 1 : 3
     grid on 
     
 end
-
-f_MODULATED_SIGNAL = (-length(sum_signals)/2:1:length(sum_signals)/2-1)';
+SUM_SIGNALS = fftshift(fft(sum_signals));
+f_MODULATED_SIGNAL = (-length(SUM_SIGNALS)/2:1:length(SUM_SIGNALS)/2-1)';
 figure
-% subplot(2,1,1)
-plot(f_MODULATED_SIGNAL*Fs_carrier/length(sum_signals),abs(sum_signals), 'g')
+subplot(2,1,1)
+plot(f_MODULATED_SIGNAL*Fs_carrier/length(SUM_SIGNALS),abs(SUM_SIGNALS), 'g')
 title("Transmitted Signals")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 grid on 
 
 %% RF Band Pass Filter
-FpassLower = 141440;
-FpassUpper = 158672;
-sum_signals_BPF = bandpass(abs(sum_signals), [FpassLower, FpassUpper], 10*Fs);
-SUM_SIGNALS_BPF = fftshift(fft(sum_signals_BPF));
+A_stop1 = 60;           % Attenuation in the first stopband = 60 dB
+F_stop1 = 180000;		% Edge of the stopband = 8400 Hz
+F_pass1 = 190000;       % Edge of the passband = 10800 Hz
+F_pass2 = 210000;       % Closing edge of the passband = 15600 Hz
+F_stop2 = 220000;       % Edge of the second stopband = 18000 Hz
+A_stop2 = 60;           % Attenuation in the second stopband = 60 dB
+A_pass = 1;             % Amount of ripple allowed in the passband = 1 dB
+
+band_pass_filter = fdesign.bandpass(F_stop1, F_pass1, F_pass2, F_stop2, A_stop1, A_pass, A_stop2, 10*Fs);
+band_pass_filter = design(band_pass_filter, 'equiripple');
+sum_signals_BPF  = filter(band_pass_filter, sum_signals);
+SUM_SIGNALS_BPF  = fftshift(fft(sum_signals_BPF));
 f_MODULATED_SIGNAL = (-length(SUM_SIGNALS_BPF)/2:1:length(SUM_SIGNALS_BPF)/2-1)';
-figure
+subplot(2,1,2)
 plot(f_MODULATED_SIGNAL*Fs_carrier/length(SUM_SIGNALS_BPF), abs(SUM_SIGNALS_BPF), 'r')
-title("After BPF")
+title("RF stage after BPF")
 xlabel("Frequency (Hz)")
 ylabel("Magnitude")
 grid on
+
