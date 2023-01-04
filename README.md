@@ -19,7 +19,7 @@
 
 > ## __Removing RF stage__
 ```MATLAB
-%%%%%%%%%% comment this part if yoy want to demodulate without RF stage %%%%%%%%%%
+%%%%%%%%%% comment this part if you want to demodulate without RF stage %%%%%%%%%%
 % sum_signals_BPF = sum_signals;
 band_pass_filter = fdesign.bandpass(F_stop1, F_pass1, F_pass2, F_stop2, A_stop1, A_pass, A_stop2, 15 * Fs);
 band_pass_filter = design(band_pass_filter, 'equiripple');
