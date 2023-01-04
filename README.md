@@ -45,7 +45,7 @@ IF = 25000 + offset;                                % If frequency 25 KHz
    * by running code, user required to choose which audio he want to hear as in the following figure
 
    ![data frame](Screens/User%20Input.PNG)
-> ### Team members:
+> ### Team members
    - **Omr Amr Mahmoud Hafez** 
    - **Mohamed Khaled Mohamed Alahmady**
 
