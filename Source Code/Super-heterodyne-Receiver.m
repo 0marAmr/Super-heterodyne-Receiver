@@ -99,9 +99,10 @@ F_stop2 = signal_number * 100000 + BW;              % Edge of the second stopban
 A_stop2 = 60;                                       % Attenuation in the second stopband = 60 dB
 A_pass = 1;                                         % Amount of ripple allowed in the passband = 1 dB
 
-% sum_signals_BPF = sum_signals;
 
-% comment this part if want to demoulate without RF stage
+
+%%%%%%%%%% comment this part if you want to demodulate without RF stage %%%%%%%%%%
+% sum_signals_BPF = sum_signals;
 band_pass_filter = fdesign.bandpass(F_stop1, F_pass1, F_pass2, F_stop2, A_stop1, A_pass, A_stop2, 15 * Fs);
 band_pass_filter = design(band_pass_filter, 'equiripple');
 sum_signals_BPF = filter(band_pass_filter, sum_signals);
@@ -116,7 +117,8 @@ grid on
 
 %% IF stage
 fc = signal_number * 100000;                        % [100, 150, 200, 250, 300] KHz
-offset = 100;                                       % the receiver oscillator offset [0, 0.1k, 1k]
+%%%%%%%%%% the receiver oscillator offset [0, 0.1k, 1k] %%%%%%%%%%
+offset = 0;
 IF = 25000 + offset;                                % If frequency 25 KHz
 f_carrier = fc + IF;                                % carrier frequency
 Fs_carrier = 15 * Fs; 
